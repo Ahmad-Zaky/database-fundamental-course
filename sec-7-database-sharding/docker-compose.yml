@@ -1,0 +1,88 @@
+services:
+  pgadmin:
+    container_name: pgadmin-hn
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    networks:
+      - default
+
+  pgshard1:
+    container_name: postgres-1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_DATABASE=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_SUPERUSER_USERNAME=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust  # Allows connections from all clients (use only for development)
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - default
+
+  pgshard2:
+    container_name: postgres-2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_DATABASE=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_SUPERUSER_USERNAME=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust  # Allows connections from all clients (use only for development)
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+    networks:
+      - default
+
+  pgshard3:
+    container_name: postgres-3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_DATABASE=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_SUPERUSER_USERNAME=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust  # Allows connections from all clients (use only for development)
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5434:5432"
+    restart: unless-stopped
+    networks:
+      - default
+
+volumes:
+  pgadmin:
+
+networks:
+  default:
+    name: postgres-hn

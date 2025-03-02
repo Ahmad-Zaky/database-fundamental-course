@@ -1,0 +1,58 @@
+services:
+  pgmaster:
+    container_name: pg-master
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_DATABASE=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_SUPERUSER_USERNAME=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust  # Allows connections from all clients (use only for development)
+      - PGDATA=/data/postgres
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./replica/master_data:/data/postgres
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+    networks:
+      - default
+
+  pgstandby1:
+    container_name: pg-standby-1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_DATABASE=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_SUPERUSER_USERNAME=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust  # Allows connections from all clients (use only for development)
+      - PGDATA=/data/postgres
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./replica/standby_data:/data/postgres
+    ports:
+      - "5434:5432"
+    restart: unless-stopped
+    networks:
+      - default
+
+volumes:
+  postgres:
+  pgadmin:
+
+networks:
+  default:
+    name: postgres-replica
